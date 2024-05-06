@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+enum enumTypeUser {
+  proprietario
+  inquilino
+  comprador
+  prestador
+  captador
+  fiador
+  colaborador
+  corretor
+}
+
+enum enumUserRoles {
+  listar
+  criar
+  editar
+  deletar
+}
+
+enum enumEstadoCivil {
+  casado
+  solteiro
+  divorciado
+  viuvo
+}
+
+model User {
+  id           String @id @default(uuid())
+  name         String
+  email        String @unique
+  password     String
+  roles        String
+  imovel       String
+  account_bank String
+  cpf          String @unique
+  rg           String @unique
+  phone        String
+  born         String
+
+  type_user    enumTypeUser
+  estado_civil enumEstadoCivil @default(solteiro)
+
+  Account_bank Account_bank[]
+  Endereco     Endereco[]
+
+  crated_at  DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
+
+model Account_bank {
+  id String @id @default(uuid())
+
+  bank_code String
+  agencia   String
+  conta     String
+  key_pix   String
+  userId    String @unique
+  user      User   @relation(fields: [userId], references: [id])
+}
+
+model Endereco {
+  id String @id @default(uuid())
+
+  rua         String
+  cidade      String
+  UF          String
+  CEP         String
+  numero      Int
+  complemento String
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  crated_at  DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
