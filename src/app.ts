@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import fastify from 'fastify';
-import { ZodError, z } from 'zod';
+import { ZodError } from 'zod';
 
 import { env } from './env';
 import { AppError } from './shared/app-error/AppError';
@@ -15,13 +15,21 @@ app.setErrorHandler((error, request, reply) => {
     const key = error.issues[0].path[0];
     const mess = error.issues[0].message;
 
+    console.log(error)
+    const err = {
+      error: {
+        message: `Validation error: ${key}, ${mess}`,
+        statusCode: 409
+      }
+    }
+
     return reply
-      .status(400)
-      .send({ message: `Validation error: ${key}, ${mess}` });
+      .status(409)
+      .send(err);
   }
 
   if (error instanceof AppError) {
-    return reply.status(401).send(error.message);
+    return reply.status(409).send({ error });
   }
 
   if (env.NODE_ENV !== 'production') {

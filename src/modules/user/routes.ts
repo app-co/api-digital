@@ -5,4 +5,5 @@ const controler = new Controller()
 
 export async function userRoute(app: FastifyInstance) {
   app.post('/user/register', controler.register);
+  app.get('/user/get-all', controler.getAll);
 }

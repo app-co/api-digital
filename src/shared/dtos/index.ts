@@ -1,43 +1,14 @@
-export interface IWalletDto {
-  id: string;
-  balance: number;
-  bet: number;
-  deposit: number;
+import { z } from "zod";
 
-  userId: number;
-  crated_at: string | Date;
-  updated_at: string | Date;
-}
-
-export interface IPaymentDto {
-  id: string;
-
-  status: string;
-  amount: string;
-  userId: string;
-
-  crated_at: string | Date;
-  updated_at: string | Date;
-}
-
-export interface IUserDto {
-  id?: number;
-  name: string;
-  email: string;
-  user_name: string;
-  document?: string;
-  password: string;
-
-  crated_at?: string | Date;
-  updated_at?: string | Date;
-
-  wallet?: IWalletDto;
-  referral_settings?: string;
-  payments?: IPaymentDto[];
-  roles?: {
-    id: string;
-    admin: boolean;
-    is_referral: boolean;
-    is_ban: boolean;
-  };
-}
+export const locality = z.object({
+  id: z.string(),
+  rua: z.string(),
+  cidade: z.string(),
+  UF: z.string(),
+  CEP: z.string(),
+  numero: z.string(),
+  complemento: z.string(),
+  fk_id: z.any(),
+  created_at: z.date(),
+  updated_at: z.date(),
+})

@@ -6,10 +6,12 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // directUrl = env("DIRECT_DATABASE_URL")
 }
+
+// TODO ENUMNS
 
 enum enumTypeUser {
   proprietario
@@ -36,30 +38,118 @@ enum enumEstadoCivil {
   viuvo
 }
 
+enum enumTipo {
+  venda
+  locacao
+  venda_locacao
+}
+
+enum enumSubCategorias {
+  armazem
+  barracao
+  box
+  galpao
+  garagem
+  hotel
+  loja
+  pavilhao
+  ponto_comercial
+  predio
+  sala
+  salao
+  sobrado
+  terreno
+  ponto_comercialcondominio
+  industrial
+  lote
+  padrao
+  residencial
+  area
+}
+
+enum enumTipoCondominio {
+  casa
+  apartamento
+  kitnet
+  comercial
+  lote
+}
+
+enum enumStatusCondominio {
+  planta
+  comdominio
+  loteamento
+  lancamento
+}
+
+enum enumRoles {
+  visualizar
+  atualizar
+  criar
+  excluir
+  full
+}
+
+enum enumTypePhone {
+  celular
+  comercial
+  residencial
+}
+
+enum enumEmail {
+  primario
+  secundario
+}
+
+// todo ////////////////////////////////////////////////////////////////////
+
 model User {
-  id           String @id @default(uuid())
-  name         String
-  email        String @unique
-  password     String
-  roles        String
-  imovel       String
-  account_bank String
-  cpf          String @unique
-  rg           String @unique
-  phone        String
-  born         String
+  id        String   @id @default(uuid())
+  name      String
+  password  String
+  cpf       String   @unique
+  rg        String   @unique
+  born      String
+  phones    phones[]
+  email     email[]
+  type_user grupo[]
+  Imovel    Imovel[]
 
-  type_user    enumTypeUser
+  account_bank account_bank[]
+  endereco     User_end?
   estado_civil enumEstadoCivil @default(solteiro)
-
-  Account_bank Account_bank[]
-  Endereco     Endereco[]
 
   crated_at  DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
 }
 
-model Account_bank {
+model email {
+  id    Int       @id @default(autoincrement())
+  email String
+  type  enumEmail
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  crated_at  DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
+
+model phones {
+  id     Int           @id @default(autoincrement())
+  codigo String        @default(dbgenerated("+55"))
+  area   String        @default(dbgenerated("14"))
+  numero String
+  type   enumTypePhone @default(celular)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  crated_at  DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
+
+model account_bank {
   id String @id @default(uuid())
 
   bank_code String
@@ -70,7 +160,26 @@ model Account_bank {
   user      User   @relation(fields: [userId], references: [id])
 }
 
-model Endereco {
+// ** ENDEREÇOS
+
+model User_end {
+  id String @id @default(uuid())
+
+  rua         String
+  cidade      String
+  UF          String
+  CEP         String
+  numero      String
+  complemento String?
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  crated_at  DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
+
+model imobiliaria_end {
   id String @id @default(uuid())
 
   rua         String
@@ -78,10 +187,209 @@ model Endereco {
   UF          String
   CEP         String
   numero      Int
-  complemento String
+  complemento String?
 
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id])
+  imobiliariaId Int         @unique
+  imobiliaria   imobiliaria @relation(fields: [imobiliariaId], references: [id])
+
+  crated_at  DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+  Imovel     Imovel[]
+}
+
+model Imovel_end {
+  id String @id @default(uuid())
+
+  rua         String
+  cidade      String
+  UF          String
+  CEP         String
+  numero      Int
+  complemento String?
+
+  imovelId Int @unique
+
+  Imovel Imovel @relation(fields: [imovelId], references: [id])
+
+  crated_at  DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
+
+model condominio_end {
+  id String @id @default(uuid())
+
+  rua         String
+  cidade      String
+  UF          String
+  CEP         String
+  numero      Int
+  complemento String?
+
+  condominioId Int @unique
+
+  condominio condominio @relation(fields: [condominioId], references: [id])
+
+  crated_at  DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
+
+// * //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+model Imovel {
+  id Int @id @default(autoincrement())
+
+  codigo        Int @unique @default(autoincrement())
+  value         Int
+  imobiliariaId Int
+
+  imobiliaria       imobiliaria @relation(fields: [imobiliariaId], references: [id])
+  imobiliaria_endId String?
+  userId            String
+
+  end   Imovel_end?
+  dados dados_imovel?
+
+  ambientes       ambientes[]
+  keys            keys[]
+  caracteristicas caracteristicas_imovel[]
+  placas          placas[]
+  documentos      documentos[]
+
+  crated_at       DateTime         @default(now())
+  updated_at      DateTime         @default(now()) @updatedAt
+  imobiliaria_end imobiliaria_end? @relation(fields: [imobiliaria_endId], references: [id])
+  user            User             @relation(fields: [userId], references: [id])
+}
+
+model dados_imovel {
+  id Int @id @default(autoincrement())
+
+  tipo              enumTipo
+  categoria         String
+  valor_avaliado    Int
+  n_matricula       String
+  n_iptu            String
+  valor_anual_iptu  Int
+  valor_mensal_iptu Int
+  n_parcelas_iptu   Int
+  a_pagar_iptu      Int
+  medidor_gas       String
+  energia_eletrica  String
+  agua_esgoto       String
+  tensao_eletrica   String
+  observacao        String?
+
+  imovelId Int @unique
+
+  imovel Imovel @relation(fields: [imovelId], references: [id])
+
+  crated_at  DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
+
+model keys {
+  id     Int     @id @default(autoincrement())
+  qnt    Int
+  obs    String
+  comodo String?
+
+  imovelId Int    @unique
+  imovel   Imovel @relation(fields: [imovelId], references: [id])
+
+  crated_at  DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
+
+model caracteristicas_imovel {
+  id Int @id @default(autoincrement())
+
+  imovelId Int    @unique
+  imovel   Imovel @relation(fields: [imovelId], references: [id])
+
+  crated_at  DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
+
+model placas {
+  id Int @id @default(autoincrement())
+
+  imovelId Int    @unique
+  imovel   Imovel @relation(fields: [imovelId], references: [id])
+
+  crated_at  DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
+
+model ambientes {
+  id Int @id @default(autoincrement())
+
+  imovelId Int    @unique
+  imovel   Imovel @relation(fields: [imovelId], references: [id])
+
+  crated_at  DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
+
+model documentos {
+  id Int @id @default(autoincrement())
+
+  imovelId Int    @unique
+  imovel   Imovel @relation(fields: [imovelId], references: [id])
+
+  crated_at  DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+}
+
+model imobiliaria {
+  id Int @id @default(autoincrement())
+
+  cnpj            String
+  nome            String
+  matriz_filial   String
+  cpf_responsavel String
+  nome_fantasia   String
+  numero_creci    String
+
+  crated_at       DateTime         @default(now())
+  updated_at      DateTime         @default(now()) @updatedAt
+  imoveis         Imovel[]
+  condominios     condominio[]
+  imobiliaria_end imobiliaria_end?
+}
+
+model condominio {
+  id   Int    @id @default(autoincrement())
+  nome String
+
+  dt_vencimento      DateTime
+  elevadores_servico Int      @default(0)
+  elevadores_social  Int      @default(0)
+  condominio         String?
+  url_landing_page   String?
+  imobiliariaId      Int
+
+  tipo   enumTipoCondominio
+  status enumStatusCondominio
+
+  condominio_end condominio_end?
+  imobiliaria    imobiliaria     @relation(fields: [imobiliariaId], references: [id])
+}
+
+model corretora {
+  id         Int     @id @default(autoincrement())
+  nome       String
+  contato    String?
+  phone_area String?
+}
+
+model grupo {
+  id    Int         @id @default(autoincrement())
+  nome  String
+  roles enumRoles[]
+  grupo String[]
+
+  User   User?   @relation(fields: [userId], references: [id])
+  userId String?
 
   crated_at  DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
