@@ -47,4 +47,14 @@ export class Controller {
     return res.status(201).send(rs);
   }
 
+  async filter(req: FastifyRequest, res: FastifyReply) {
+    const schema = S.schemaFilter.parse(req.query)
+
+
+    const rs = await make.filter(schema);
+
+    return res.status(201).send(rs);
+  }
+
+
 }

@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { AppError } from '@/shared/app-error/AppError';
 import { TImovel } from './schemas';
+import { TFilter } from './types';
 
 
 export class Service {
@@ -42,6 +43,38 @@ export class Service {
   async listAll() {
 
     const list = await prisma.imovel.findMany();
+
+    return list
+  }
+
+  async filter(params: TFilter) {
+    const wherClause: any = {}
+
+
+    if (params.value_min) {
+      wherClause.value = { gte: parseInt(params.value_min) }
+    }
+
+    if (params.value_max) {
+      wherClause.value = { lte: parseInt(params.value_max) };
+    }
+
+    if (params.imob_name) {
+      wherClause.imobiliaria = {
+        nome: { contains: params.imob_name }
+      }
+    }
+
+    console.log({ wherClause, params })
+    const list = await prisma.imovel.findMany({
+      where: wherClause,
+      select: {
+        value: true,
+        imobiliaria: true
+      }
+    });
+
+
 
     return list
   }

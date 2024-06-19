@@ -76,11 +76,19 @@ export const schemaImovel = z.object({
   keys: z.array(schemaKeys),
 })
 
-export type TKeys = z.infer<typeof schemaKeys>
-export type TDocumentos = z.infer<typeof schemaDocumentos>
-export type TAmbientes = z.infer<typeof schemaAmbientes>
-export type TPlacas = z.infer<typeof schemaPlacas>
-export type TCaracteristicas = z.infer<typeof schemaCaracteristicasImovel>
-export type TDadosImovel = z.infer<typeof schemaDadosImovel>
-export type TEnd = z.infer<typeof locality>
-export type TImovel = z.infer<typeof schemaImovel>
+export const schemaFilter = z.object({
+  value_max: z.string().optional(),
+  value_min: z.string().optional(),
+  tipo: z.enum(['venda', 'locacao', 'venda_locacao']).optional(),
+  categoria: z.number().optional(),
+  n_matricula: z.number().optional(),
+  n_iptu: z.number().optional(),
+  imob_name: z.string().optional(),
+  qnt_quartos: z.number().optional(),
+  qnt_suites: z.number().optional(),
+  qnt_banheiros: z.number().optional(),
+  qnt_vagas: z.number().optional(),
+  vagas_garagens: z.number().optional(),
+  mobiliado: z.boolean().default(false)
+})
+
